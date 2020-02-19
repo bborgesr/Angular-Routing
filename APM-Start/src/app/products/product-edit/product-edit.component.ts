@@ -16,6 +16,7 @@ export class ProductEditComponent implements OnInit {
   id: number;
 
   product: Product;
+  private dataIsValid: { [key: string]: boolean } = {};
 
   constructor(
     private productService: ProductService,
@@ -25,14 +26,14 @@ export class ProductEditComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    // const resolvedData: ProductResolved = this.route.snapshot.data[
-    //   "resolvedData"
-    // ];
     this.route.data.subscribe(data => {
       const resolvedData: ProductResolved = data["resolvedData"];
       this.errorMessage = resolvedData.error;
       this.onProductRetrieved(resolvedData.product);
     });
+    // const resolvedData: ProductResolved = this.route.snapshot.data[
+    //   "resolvedData"
+    // ];
     // this.errorMessage = resolvedData.error;
     // this.onProductRetrieved(resolvedData.product);
 
@@ -84,7 +85,7 @@ export class ProductEditComponent implements OnInit {
   }
 
   saveProduct(): void {
-    if (true === true) {
+    if (this.isValid()) {
       if (this.product.id === 0) {
         this.productService.createProduct(this.product).subscribe({
           next: () => {
@@ -115,7 +116,34 @@ export class ProductEditComponent implements OnInit {
     if (message) {
       this.messageService.addMessage(message);
     }
+  }
 
-    // Navigate back to the product list
+  validate(): void {
+    this.dataIsValid = {};
+
+    if (
+      this.product.productName &&
+      this.product.productName.length >= 3 &&
+      this.product.productCode
+    ) {
+      this.dataIsValid["info"] = true;
+    } else {
+      this.dataIsValid["info"] = false;
+    }
+
+    if (this.product.category && this.product.category.length >= 3) {
+      this.dataIsValid["tags"] = true;
+    } else {
+      this.dataIsValid["tags"] = false;
+    }
+  }
+
+  isValid(path?: string): boolean {
+    this.validate();
+    if (path) return this.dataIsValid[path];
+    return (
+      this.dataIsValid &&
+      Object.keys(this.dataIsValid).every(d => this.dataIsValid[d] === true)
+    );
   }
 }
